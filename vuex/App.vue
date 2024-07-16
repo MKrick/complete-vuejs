@@ -1,68 +1,47 @@
 <template>
-  <button 
-    v-for="post in posts" 
+  <button
+    v-for="post in posts"
     :key="post.id"
-    @click="fetchPost(post)"
+    @click="click(post)"
   >
     {{ post.title }}
   </button>
 
-  <div v-if="post">
-    <h1>
-      {{ postTitle }}
-    </h1>
-    <p>{{ post.content }}</p>
+  <div v-if="currentPost">
+    <h2> {{ currentPost.title }}</h2>
+    <h4> {{ currentPost.content }}</h4>
   </div>
 </template>
 
 <script>
-import { computed } from 'vue'
 import { useStore } from 'vuex'
+import { computed, onMounted } from 'vue'
 
 export default {
   setup() {
-    const posts = [
-      { 
-        id: 1,
-        title: 'Post 1',
-      },
-      { 
-        id: 2,
-        title: 'Post 2',
-      },
-    ]
-
     const store = useStore()
-    const fetchPost = (post) => {
-      store.dispatch('posts/fetchPostData', post.id)
+
+    const click = (post) => {
+      store.commit('posts/setPostId', post.id)
     }
 
-    const post = computed(() => {
-      return store.state.posts.post
-    })
+    const fetchData = () => {
+      store.dispatch('posts/fetch')
+    }
 
-    const postTitle = computed(() => {
-      return store.getters['posts/postTitle']
+    onMounted(() => {
+      fetchData()
     })
 
     return {
-      postTitle,
-      post,
-      fetchPost,
-      posts,
+      click,
+      postId: computed(() => store.state.posts.postId),
+      posts: computed(() => store.state.posts.all ),
+      currentPost: computed(() => store.getters['posts/currentPost'])
     }
   }
 }
 </script>
 
-<style>
-body {
-  font-size: 40px;
-}
-
-button {
-  height: 50px;
-  width: 200px;
-  margin: 15px;
-}
+<style scoped>
 </style>
